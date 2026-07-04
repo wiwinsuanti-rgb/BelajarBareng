@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Visualisasi Website Guru Produktif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+            background-color: #faf8f5;
+            color: #1e293b;
+        }
+
+        .sidebar-active {
+            background-color: #f1f5f9;
+            color: #2563eb;
+            font-weight: 600;
+            border-left: 4px solid #2563eb;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .nav-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .nav-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        /* Pulsing light for AI status */
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <nav class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col hidden md:flex z-20">
+        <div class="p-6">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl">🤖</span>
+                <div>
+                    <h1 class="text-base font-extrabold text-slate-800 tracking-tight leading-none uppercase">Portal Guru</h1>
+                    <span class="text-[10px] text-blue-600 font-semibold tracking-wider uppercase">Informatika & PPLG</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto nav-scroll px-3 space-y-1">
+            <button onclick="switchSection('beranda')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition sidebar-active" data-section="beranda">
+                <span class="mr-3">🏠</span> Beranda
+            </button>
+            <button onclick="switchSection('profil')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="profil">
+                <span class="mr-3">👤</span> Profil Guru
+            </button>
+            <button onclick="switchSection('administrasi')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="administrasi">
+                <span class="mr-3">📄</span> Silabus & RPP <span class="ml-auto text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">AI</span>
+            </button>
+            
+            <div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Pembelajaran</div>
+            <button onclick="switchSection('materi')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="materi">
+                <span class="mr-3">📚</span> Materi Pelajaran
+            </button>
+            <button onclick="switchSection('tugas')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="tugas">
+                <span class="mr-3">✍️</span> Tugas & Proyek
+            </button>
+            <button onclick="switchSection('evaluasi')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="evaluasi">
+                <span class="mr-3">📊</span> Evaluasi & Kuis <span class="ml-auto text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">AI</span>
+            </button>
+            
+            <div class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">Ekstra & Komunitas</div>
+            <button onclick="switchSection('galeri')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="galeri">
+                <span class="mr-3">🖼️</span> Galeri Kegiatan
+            </button>
+            <button onclick="switchSection('sumber')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="sumber">
+                <span class="mr-3">🔗</span> Sumber & Sandbox <span class="ml-auto text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">AI</span>
+            </button>
+            <button onclick="switchSection('forum')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="forum">
+                <span class="mr-3">💬</span> Forum Tanya Jawab <span class="ml-auto text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded font-bold">AI</span>
+            </button>
+            <button onclick="switchSection('download')" class="nav-btn w-full flex items-center p-3 text-sm rounded-lg transition hover:bg-slate-50" data-section="download">
+                <span class="mr-3">📥</span> Download Center
+            </button>
+        </div>
+
+        <!-- API Config & Info Widget -->
+        <div class="p-4 border-t border-slate-200 bg-slate-50">
+            <div class="text-xs font-bold text-slate-700 mb-2 flex items-center gap-1">
+                <span>⚡</span> Gemini Engine
+            </div>
+            <div class="space-y-1.5">
+                <input id="api-key-input" type="password" placeholder="Sematkan API Key (Opsional)" 
+                       class="w-full text-xs px-2.5 py-1.5 rounded border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                       onchange="saveApiKey()" />
+                <div class="flex items-center justify-between text-[10px] text-slate-500">
+                    <span id="api-status-label" class="flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-green-500 pulse-green"></span> Terhubung (Canvas Mode)
+                    </span>
+                    <button onclick="resetApiKey()" class="text-red-500 hover:underline">Hapus Key</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative bg-[#faf8f5] flex flex-col h-screen">
+        
+        <!-- Header Mobile (Hanya muncul di HP) -->
+        <header class="md:hidden bg-white p-4 border-b border-slate-200 flex justify-between items-center sticky top-0 z-50 shadow-sm">
+            <span class="font-bold text-blue-600 tracking-wider">PORTAL GURU</span>
+            <button onclick="toggleMobileMenu()" class="p-2 text-slate-700 font-bold text-lg">☰</button>
+        </header>
+
+        <div id="content-container" class="max-w-6xl mx-auto p-4 md:p-8 space-y-8 flex-1 w-full">
+            
+            <!-- Custom Toast Notifications -->
+            <div id="toast-box" class="fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 flex items-center p-4 space-x-3 max-w-sm bg-white rounded-xl shadow-lg border border-slate-100">
+                <div class="text-xl" id="toast-icon">ℹ️</div>
+                <div class="text-xs font-medium text-slate-700" id="toast-message">Notifikasi baru.</div>
+            </div>
+
+            <!-- Section: BERANDA -->
+            <section id="beranda" class="tab-content active space-y-6">
+                <div class="relative rounded-3xl overflow-hidden h-72 flex items-center justify-start text-white p-8 md:p-12 shadow-xl bg-gradient-to-r from-blue-700 via-indigo-700 to-indigo-900">
+                    <div class="absolute inset-0 bg-black opacity-10"></div>
+                    <div class="relative z-10 max-w-xl">
+                        <span class="text-xs font-extrabold bg-blue-500 text-white px-3 py-1 rounded-full uppercase tracking-widest mb-3 inline-block">Kurikulum Merdeka</span>
+                        <h2 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">Portal Pembelajaran Informatika</h2>
+                        <p class="text-sm md:text-base opacity-90 leading-relaxed font-light">Membangun keahlian Software Engineering, Algoritma, dan Database yang handal.</p>
+                    </div>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 glass-card p-6 md:p-8 rounded-2xl shadow-sm space-y-4">
+                        <h3 class="text-2xl font-bold tracking-tight text-slate-800">Selamat Datang, Siswa Kreatif!</h3>
+                        <p class="text-slate-600 leading-relaxed text-sm">
+                            Website ini adalah pusat kendali belajar mandiri Anda. Di sini, Anda dapat mengakses materi kurikulum merdeka, menguji pemahaman dengan evaluasi cerdas AI, hingga mendiskusikan error pemograman Anda langsung dengan asisten AI kami.
+                        </p>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="switchSection('evaluasi')" class="bg-blue-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-blue-700 transition">Coba Evaluasi AI</button>
+                            <button onclick="switchSection('forum')" class="bg-white border border-slate-200 text-slate-700 px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-slate-50 transition">Diskusi Error Code</button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">Kalender Jadwal Mingguan</h4>
+                            <ul class="space-y-3.5 text-sm">
+                                <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600">Senin (Kelas X)</span>
+                                    <span class="font-semibold text-slate-800 bg-blue-50 px-2 py-0.5 rounded text-xs">Informatika 1</span>
+                                </li>
+                                <li class="flex justify-between items-center border-b border-slate-100 pb-2">
+                                    <span class="text-slate-600">Selasa (Kelas XI)</span>
+                                    <span class="font-semibold text-slate-800 bg-emerald-50 px-2 py-0.5 rounded text-xs">PBO Java</span>
+                                </li>
+                                <li class="flex justify-between items-center pb-1">
+                                    <span class="text-slate-600">Kamis (Kelas XII)</span>
+                                    <span class="font-semibold text-slate-800 bg-amber-50 px-2 py-0.5 rounded text-xs">Web Dev & SQL</span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="pt-4 border-t border-slate-100 mt-4 text-xs text-slate-500">
+                            *Gunakan WhatsApp di sidebar untuk konsultasi cepat.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: PROFIL GURU -->
+            <section id="profil" class="tab-content space-y-6">
+                <div class="bg-white p-6 md:p-10 rounded-3xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-8 items-center">
+                    <div class="w-40 h-40 bg-gradient-to-tr from-blue-500 to-indigo-600 rounded-full flex-shrink-0 flex items-center justify-center text-5xl overflow-hidden border-4 border-white shadow-xl text-white font-bold">
+                        S.K
+                    </div>
+                    <div class="flex-1 text-center md:text-left space-y-4">
+                        <div>
+                            <h2 class="text-3xl font-extrabold text-slate-800 tracking-tight">Budiman Santoso, S.Kom.</h2>
+                            <p class="text-blue-600 font-semibold text-sm">Guru Produktif PPLG / Kejuruan Informatika</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-xs">
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <span class="block text-slate-400 font-bold uppercase mb-1">NIP</span>
+                                <span class="font-bold text-slate-700">19920815 202012 1 012</span>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-100">
+                                <span class="block text-slate-400 font-bold uppercase mb-1">Keahlian Utama</span>
+                                <span class="font-bold text-slate-700">Backend Dev & Database Architect</span>
+                            </div>
+                        </div>
+                        <blockquote class="italic text-slate-500 border-l-4 border-blue-500 pl-4 text-sm py-1">
+                            "Mendidik siswa kejuruan bukan sekadar mengajarkan bagaimana sintaks ditulis, melainkan melatih pemecahan masalah (Problem Solving) logis yang relevan dengan kebutuhan industri nyata."
+                        </blockquote>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: SILABUS & RPP -->
+            <section id="administrasi" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Silabus & Modul Ajar RPP</h2>
+                    <p class="text-slate-500 text-sm mt-1">Akses dokumen administrasi kurikulum atau buat Modul RPP instan dengan AI.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Left: AI RPP Generator -->
+                    <div class="lg:col-span-1 bg-gradient-to-b from-indigo-50 to-white p-6 rounded-2xl border border-indigo-100 shadow-sm space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🪄</span>
+                            <h3 class="text-base font-bold text-slate-800">Asisten AI RPP</h3>
+                        </div>
+                        <p class="text-xs text-slate-500">Hasilkan draf Modul Ajar / RPP Kurikulum Merdeka secara instan sesuai materi terpilih.</p>
+                        
+                        <div class="space-y-3 pt-2">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Tingkat Kelas</label>
+                                <select id="rpp-kelas" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                    <option value="Kelas X (Dasar)">Kelas X (Dasar)</option>
+                                    <option value="Kelas XI (Menengah)">Kelas XI (Menengah)</option>
+                                    <option value="Kelas XII (Lanjut)">Kelas XII (Lanjut)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Topik Utama</label>
+                                <input id="rpp-topik" type="text" placeholder="Misal: OOP Inheritance Java atau CIDR Subnetting" 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Durasi</label>
+                                <select id="rpp-durasi" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                    <option value="2 JP (2 x 45 Menit)">2 JP (2 x 45 Menit)</option>
+                                    <option value="4 JP (4 x 45 Menit)">4 JP (4 x 45 Menit)</option>
+                                    <option value="6 JP (6 x 45 Menit)">6 JP (6 x 45 Menit)</option>
+                                </select>
+                            </div>
+                            <button onclick="generateAI_RPP()" class="w-full bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1">
+                                <span>✨</span> Hasilkan dengan Gemini
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Right: Output Area & Static Silabus -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
+                                📝 Hasil Draf Modul Ajar RPP
+                            </h3>
+                            <div id="rpp-output-box" class="bg-slate-50 border border-slate-200 p-4 rounded-xl min-h-[250px] max-h-[400px] overflow-y-auto text-xs text-slate-600 whitespace-pre-wrap leading-relaxed">
+                                Silakan isi topik pembelajaran di kolom kiri dan klik tombol untuk meminta asisten AI menyusun draf RPP terperinci.
+                            </div>
+                            <div class="flex justify-end mt-3">
+                                <button onclick="copyToClipboard('rpp-output-box')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1">
+                                    📋 Salin Konten
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Static Downloads Area -->
+                        <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                            <h4 class="font-bold text-xs text-slate-400 uppercase tracking-wider mb-4">File Silabus & RPP Standar (Link Drive)</h4>
+                            <div class="grid sm:grid-cols-3 gap-4">
+                                <a href="#" onclick="showToast('Membuka PDF Silabus X...', '📂')" class="p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-center transition">
+                                    <span class="text-xl block mb-1">📁</span>
+                                    <span class="font-bold text-xs block text-slate-800">Silabus Kelas X</span>
+                                    <span class="text-[10px] text-slate-400">Kurikulum Merdeka.pdf</span>
+                                </a>
+                                <a href="#" onclick="showToast('Membuka PDF Silabus XI...', '📂')" class="p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-center transition">
+                                    <span class="text-xl block mb-1">📁</span>
+                                    <span class="font-bold text-xs block text-slate-800">Silabus Kelas XI</span>
+                                    <span class="text-[10px] text-slate-400">PBO & Networking.pdf</span>
+                                </a>
+                                <a href="#" onclick="showToast('Membuka PDF Silabus XII...', '📂')" class="p-3.5 bg-slate-50 hover:bg-slate-100 border border-slate-100 rounded-xl text-center transition">
+                                    <span class="text-xl block mb-1">📁</span>
+                                    <span class="font-bold text-xs block text-slate-800">Silabus Kelas XII</span>
+                                    <span class="text-[10px] text-slate-400">Web Dev & Database.pdf</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: MATERI -->
+            <section id="materi" class="tab-content space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Eksplorasi Materi Pelajaran</h2>
+                        <p class="text-slate-500 text-xs">Pilih tingkat kelas untuk memfilter modul pembelajaran kejuruan.</p>
+                    </div>
+                    <select id="class-filter" onchange="renderMaterials()" class="bg-white border rounded-xl px-4 py-2 text-xs font-semibold shadow-sm outline-none focus:ring-1 focus:ring-blue-500">
+                        <option value="all">Semua Kelas</option>
+                        <option value="X">Kelas X - Dasar Komputer & Algoritma</option>
+                        <option value="XI">Kelas XI - Pemrograman & Jaringan</option>
+                        <option value="XII">Kelas XII - Web & Database</option>
+                    </select>
+                </div>
+                
+                <div id="material-grid" class="grid md:grid-cols-3 gap-6">
+                    <!-- Dynamic Material Cards injected here -->
+                </div>
+
+                <div class="bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <h4 class="font-bold text-slate-800 mb-1">📊 Statistik Cakupan Kurikulum Semester Ini</h4>
+                    <p class="text-xs text-blue-600 mb-4">Visualisasi target penyelesaian modul pembelajaran sesuai kalender pendidikan kejuruan.</p>
+                    <div class="chart-container">
+                        <canvas id="materialChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: TUGAS -->
+            <section id="tugas" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Tugas & Proyek Portofolio</h2>
+                    <p class="text-slate-500 text-sm mt-1">Daftar lembar kerja siswa dan portal pengumpulan tugas mandiri.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Tugas Aktif Minggu Ini</h3>
+                        <div class="space-y-3.5">
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3">
+                                <span class="text-lg">💻</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Tugas X: Algoritma Logika Dasar</h4>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Membuat diagram alir algoritma dengan Draw.io.</p>
+                                    <span class="inline-block mt-2 text-[9px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded">Tenggat: Sabtu ini</span>
+                                </div>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3">
+                                <span class="text-lg">☕</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Tugas XI: Relasi Class PBO Java</h4>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Membuat subclass inheritance kendaraan bermotor.</p>
+                                    <span class="inline-block mt-2 text-[9px] font-bold bg-red-100 text-red-700 px-2 py-0.5 rounded">Tenggat: 3 Hari Lagi</span>
+                                </div>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3">
+                                <span class="text-lg">💾</span>
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Tugas XII: Relational Database SQL</h4>
+                                    <p class="text-[10px] text-slate-500 mt-0.5">Merancang ERD untuk database e-commerce sederhana.</p>
+                                    <span class="inline-block mt-2 text-[9px] font-bold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded">Selesai</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Task Upload Form Simulator -->
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Portal Pengumpulan Tugas</h3>
+                        <p class="text-xs text-slate-500">Isi formulir pengumpulan tugas Anda di bawah ini (Simulasi Google Form).</p>
+                        
+                        <form onsubmit="submitTugasSim(event)" class="space-y-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Nama Lengkap Siswa</label>
+                                <input required type="text" placeholder="Masukkan nama lengkap Anda" 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" />
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Kelas</label>
+                                    <select class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                        <option>X-PPLG 1</option>
+                                        <option>X-PPLG 2</option>
+                                        <option>XI-PPLG</option>
+                                        <option>XII-PPLG</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] font-bold text-slate-600 mb-1">Mata Pelajaran</label>
+                                    <select class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                        <option>Informatika Dasar</option>
+                                        <option>PBO Java</option>
+                                        <option>Web Programming & DB</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Link Google Drive Tugas</label>
+                                <input required type="url" placeholder="https://drive.google.com/..." 
+                                       class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white" />
+                            </div>
+                            <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2.5 rounded-lg transition">
+                                Kirim Pengumpulan Tugas
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: EVALUASI & KUIS -->
+            <section id="evaluasi" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Evaluasi Pembelajaran Cerdas</h2>
+                    <p class="text-slate-500 text-sm mt-1">Uji pemahaman Anda dengan menghasilkan kuis kustom interaktif secara instan menggunakan AI.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Left: Quiz Generator Parameters -->
+                    <div class="lg:col-span-1 bg-gradient-to-br from-blue-50 to-white p-5 rounded-2xl border border-blue-100 space-y-4">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🎲</span>
+                            <h3 class="text-base font-bold text-slate-800">Pembuat Kuis AI</h3>
+                        </div>
+                        <p class="text-xs text-slate-500">Pilih topik pembelajaran di bawah ini untuk merumuskan kuis interaktif 3 pertanyaan menggunakan AI Gemini.</p>
+                        
+                        <div class="space-y-3 pt-1">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Topik Kuis</label>
+                                <select id="quiz-topic-select" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                    <option value="Algoritma dan Berpikir Komputasional">Berpikir Komputasional (X)</option>
+                                    <option value="Dasar Jaringan Komputer dan CIDR Subnetting">Subnetting Jaringan CIDR (XI)</option>
+                                    <option value="Java OOP Inheritance & Polimorfisme">OOP Class & Polymorphism (XI)</option>
+                                    <option value="MySQL Query & Join Table">MySQL Query & Join (XII)</option>
+                                </select>
+                            </div>
+                            <button onclick="generateAI_Quiz()" id="btn-gen-quiz" class="w-full bg-blue-600 text-white text-xs font-semibold py-2.5 rounded-lg hover:bg-blue-700 transition flex items-center justify-center gap-1.5">
+                                <span class="spinner hidden w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                <span>✨ Hasilkan Kuis AI</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Center & Right: Playable Quiz Box -->
+                    <div class="lg:col-span-2 bg-white p-6 rounded-2xl border border-slate-200 flex flex-col justify-between min-h-[350px]">
+                        <div id="quiz-container">
+                            <div class="text-center py-10 text-slate-400">
+                                <span class="text-4xl block mb-2">🎯</span>
+                                <h3 class="font-bold text-sm text-slate-600">Kuis Belum Dimulai</h3>
+                                <p class="text-[11px] mt-1">Gunakan panel kiri untuk membuat draf kuis interaktif baru dari asisten AI.</p>
+                            </div>
+                        </div>
+                        <div id="quiz-footer" class="border-t border-slate-100 pt-4 hidden">
+                            <div class="flex justify-between items-center">
+                                <span id="quiz-progress-text" class="text-xs text-slate-500">Pertanyaan 1 dari 3</span>
+                                <button onclick="nextQuizQuestion()" id="quiz-next-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-xs font-semibold transition">
+                                    Pertanyaan Berikutnya →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Score statistics layout remains -->
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h4 class="font-bold text-slate-800 mb-4 text-xs uppercase tracking-wider">Rekapitulasi Rata-rata Nilai Kelas (Data Live Drive)</h4>
+                    <div class="chart-container">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: GALERI -->
+            <section id="galeri" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Galeri Kegiatan & Dokumentasi</h2>
+                    <p class="text-slate-500 text-sm mt-1">Kilas balik aktivitas praktikum mandiri dan kerja kelompok di Lab PPLG.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                        <div class="h-44 bg-slate-200 flex items-center justify-center text-3xl">💻</div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Praktikum SQL Kelas XII</h4>
+                            <p class="text-[10px] text-slate-500">Siswa belajar membuat arsitektur database relasional.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                        <div class="h-44 bg-slate-200 flex items-center justify-center text-3xl">💡</div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Lomba LKS Bidang IT Web</h4>
+                            <p class="text-[10px] text-slate-500">Perwakilan sekolah memenangkan peringkat juara kabupaten.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm">
+                        <div class="h-44 bg-slate-200 flex items-center justify-center text-3xl">🤝</div>
+                        <div class="p-4 space-y-1">
+                            <h4 class="font-bold text-xs text-slate-800">Workshop Pemrograman Game</h4>
+                            <p class="text-[10px] text-slate-500">Mendatangkan praktisi pengembang game dari industri.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: SUMBER BELAJAR -->
+            <section id="sumber" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Sumber Belajar & AI Sandbox Explainer</h2>
+                    <p class="text-slate-500 text-sm mt-1">Sematkan potongan kode Anda atau minta AI untuk melahirkan templat boilerplate bahasa pemrograman secara cepat.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Left Column: Input Panel -->
+                    <div class="lg:col-span-1 bg-white p-5 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                            <span>🛠️</span> Input Code atau Bahasa
+                        </h3>
+                        
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Bahasa / Framework</label>
+                                <select id="sandbox-lang" class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white">
+                                    <option value="Java (OOP)">Java (OOP)</option>
+                                    <option value="MySQL (SQL)">MySQL (SQL)</option>
+                                    <option value="PHP (Procedural & CRUD)">PHP (Procedural & CRUD)</option>
+                                    <option value="Python (Logika Dasar)">Python (Logika Dasar)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-600 mb-1">Code / Konsep yang Ingin Dijelaskan</label>
+                                <textarea id="sandbox-code-input" rows="6" placeholder="Masukkan snippet code di sini atau minta dibuatkan..." 
+                                          class="w-full text-xs p-2.5 rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 font-mono bg-slate-50"></textarea>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="sandboxAI_Explain()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1">
+                                    <span>🔍</span> Jelaskan Code
+                                </button>
+                                <button onclick="sandboxAI_Boilerplate()" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 rounded-lg transition flex items-center justify-center gap-1">
+                                    <span>⚙️</span> Buat Boilerplate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Result Panel -->
+                    <div class="lg:col-span-2 bg-slate-900 rounded-2xl text-slate-100 p-6 flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
+                                <span class="text-xs font-bold uppercase text-slate-400 flex items-center gap-2">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span> Sandbox Console Output
+                                </span>
+                                <button onclick="copyToClipboard('sandbox-output-block')" class="text-xs text-blue-400 hover:text-blue-300 font-semibold transition">
+                                    Salin Kode / Penjelasan
+                                </button>
+                            </div>
+                            <pre id="sandbox-output-block" class="text-xs font-mono whitespace-pre-wrap overflow-x-auto h-[280px] text-slate-200">
+// Pilih bahasa di panel kiri dan klik 'Buat Boilerplate' atau 'Jelaskan Code' untuk memulai analisis sintaks dari AI Gemini.
+                            </pre>
+                        </div>
+                        <div class="text-[10px] text-slate-500 pt-4 border-t border-slate-800">
+                            *Dijalankan dengan mesin Gemini 3 Flash. Sangat membantu guru menyiapkan lembar kerja praktikum siswa.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: FORUM TANYA JAWAB -->
+            <section id="forum" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Forum Tanya Jawab & Konsultasi Error AI</h2>
+                    <p class="text-slate-500 text-sm mt-1">Mengalami kebingungan saat coding? Tanyakan langsung ke Asisten AI untuk solusi atau panduan belajar terperinci.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    <!-- Left: Group WhatsApp/Telegram Cards -->
+                    <div class="lg:col-span-1 space-y-4">
+                        <div class="bg-emerald-50 border border-emerald-200 p-5 rounded-2xl flex flex-col justify-between">
+                            <div class="space-y-2">
+                                <span class="text-2xl">💬</span>
+                                <h3 class="font-bold text-slate-800 text-sm">Grup WhatsApp Belajar</h3>
+                                <p class="text-xs text-emerald-800">Bergabunglah dengan grup diskusi real-time untuk koordinasi cepat antar teman sekelas dan guru.</p>
+                            </div>
+                            <a href="#" onclick="showToast('Mengalihkan ke link WhatsApp...', '💬')" class="mt-4 inline-block text-center bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition">
+                                Gabung WhatsApp Group
+                            </a>
+                        </div>
+                        <div class="bg-sky-50 border border-sky-200 p-5 rounded-2xl flex flex-col justify-between">
+                            <div class="space-y-2">
+                                <span class="text-2xl">✈️</span>
+                                <h3 class="font-bold text-slate-800 text-sm">Grup Telegram Komunitas</h3>
+                                <p class="text-xs text-sky-800">Wadah berbagi tutorial, template code, serta installer software berukuran besar sesama siswa PPLG.</p>
+                            </div>
+                            <a href="#" onclick="showToast('Mengalihkan ke link Telegram...', '✈️')" class="mt-4 inline-block text-center bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs py-2 px-4 rounded-xl transition">
+                                Gabung Telegram Group
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Right: Dynamic Chat Bot interface with Gemini -->
+                    <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 flex flex-col h-[400px]">
+                        <!-- Chat Header -->
+                        <div class="p-4 border-b border-slate-100 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
+                                <h3 class="font-bold text-xs text-slate-700">Asisten Diskusi Cerdas (Gemini AI)</h3>
+                            </div>
+                            <button onclick="clearChatForum()" class="text-xs text-slate-400 hover:text-red-500 font-semibold transition">Hapus Obrolan</button>
+                        </div>
+                        <!-- Chat Box -->
+                        <div id="forum-chat-box" class="flex-1 p-4 overflow-y-auto space-y-4 text-xs bg-slate-50 nav-scroll">
+                            <div class="flex items-start gap-2.5">
+                                <span class="text-lg">🤖</span>
+                                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm max-w-[80%] text-slate-600">
+                                    Halo! Saya Asisten AI Guru Produktif. Apakah ada error kode pemrograman, materi jaringan komputer, atau logika database yang ingin Anda tanyakan hari ini?
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Chat Input -->
+                        <div class="p-3 border-t border-slate-100 flex items-center gap-2 bg-white rounded-b-2xl">
+                            <input id="forum-user-input" type="text" placeholder="Tanyakan tentang OOP Java, HTML/CSS, SQL, atau Subnetting..." 
+                                   class="flex-1 text-xs p-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-1 focus:ring-blue-500 bg-white"
+                                   onkeypress="handleForumKeyPress(event)" />
+                            <button onclick="sendForumChatMessage()" class="bg-blue-600 text-white p-2.5 rounded-xl text-xs hover:bg-blue-700 transition">
+                                Kirim
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: DOWNLOAD CENTER -->
+            <section id="download" class="tab-content space-y-6">
+                <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                    <h2 class="text-2xl font-bold text-slate-800">Download Center</h2>
+                    <p class="text-slate-500 text-sm mt-1">Unduh semua aplikasi kebutuhan praktikum dan template laporan resmi.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Installer Software Utama</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Python 3.11 SDK</h4>
+                                    <p class="text-[10px] text-slate-400">Kompatibel Windows/macOS/Linux</p>
+                                </div>
+                                <a href="#" onclick="showToast('Mengunduh Python...', '📥')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Unduh</a>
+                            </div>
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">XAMPP Server (PHP 8.2)</h4>
+                                    <p class="text-[10px] text-slate-400">Untuk Server Database lokal & PHP</p>
+                                </div>
+                                <a href="#" onclick="showToast('Mengunduh XAMPP...', '📥')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Unduh</a>
+                            </div>
+                            <div class="flex items-center justify-between pb-1">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">VS Code & Notepad++</h4>
+                                    <p class="text-[10px] text-slate-400">Text Editor modern untuk Web</p>
+                                </div>
+                                <a href="#" onclick="showToast('Mengunduh VS Code...', '📥')" class="bg-blue-50 hover:bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Unduh</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 space-y-4">
+                        <h3 class="font-bold text-slate-800 text-base">Template & Dokumen</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Template Laporan Praktikum Mandiri</h4>
+                                    <p class="text-[10px] text-slate-400">Format .DOCX Kurikulum Merdeka</p>
+                                </div>
+                                <a href="#" onclick="showToast('Mengunduh Template Laporan...', '📥')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Unduh</a>
+                            </div>
+                            <div class="flex items-center justify-between pb-1">
+                                <div>
+                                    <h4 class="font-bold text-xs text-slate-800">Panduan Ujian Akhir Proyek Mandiri</h4>
+                                    <p class="text-[10px] text-slate-400">Format .PDF Kriteria Penilaian</p>
+                                </div>
+                                <a href="#" onclick="showToast('Mengunduh Panduan Ujian...', '📥')" class="bg-slate-50 hover:bg-slate-100 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-semibold transition">Unduh</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        // Data Materi
+        const materialData = [
+            { id: 1, class: 'X', title: 'Berpikir Komputasional', desc: 'Memahami 4 pilar algoritma dasar.', icon: '🧩' },
+            { id: 2, class: 'XI', title: 'OOP Java Dasar', desc: 'Class, Object, Inheritance, & Encapsulation.', icon: '☕' },
+            { id: 3, class: 'XII', title: 'MySQL & CRUD PHP', desc: 'Integrasi relational database ke website statis.', icon: '💾' },
+            { id: 4, class: 'X', title: 'Sistem Komputer', desc: 'Pengenalan Hardware, Software, & Brainware.', icon: '🖥️' },
+            { id: 5, class: 'XI', title: 'Jaringan CIDR & Subnetting', desc: 'Pembagian subnet alokasi IP Address.', icon: '🌐' }
+        ];
+
+        let materialChart, scoreChart;
+        let aiQuizData = [];
+        let currentQuizIndex = 0;
+        let quizAnswersGiven = [];
+
+        // Save API Key locally
+        function saveApiKey() {
+            const key = document.getElementById('api-key-input').value.trim();
+            localStorage.setItem('gemini_api_key', key);
+            updateApiStatusLabel();
+            showToast('API Key disimpan lokal!', '🔑');
+        }
+
+        function loadApiKey() {
+            const saved = localStorage.getItem('gemini_api_key') || "";
+            document.getElementById('api-key-input').value = saved;
+            updateApiStatusLabel();
+        }
+
+        function resetApiKey() {
+            localStorage.removeItem('gemini_api_key');
+            document.getElementById('api-key-input').value = "";
+            updateApiStatusLabel();
+            showToast('API Key lokal dihapus!', '🗑️');
+        }
+
+        function updateApiStatusLabel() {
+            const label = document.getElementById('api-status-label');
+            const saved = localStorage.getItem('gemini_api_key');
+            if (saved) {
+                label.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500"></span> Menggunakan Custom Key`;
+            } else {
+                label.innerHTML = `<span class="w-2 h-2 rounded-full bg-blue-500 pulse-green"></span> Mode Integrasi Canvas`;
+            }
+        }
+
+        // Core Gemini API call wrapper (With exponential backoff)
+        async function callGeminiAPI(userPrompt, systemInstruction = '', responseSchema = null) {
+            const savedKey = localStorage.getItem('gemini_api_key') || "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${savedKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: userPrompt }] }]
+            };
+
+            if (systemInstruction) {
+                payload.systemInstruction = {
+                    parts: [{ text: systemInstruction }]
+                };
+            }
+
+            if (responseSchema) {
+                payload.generationConfig = {
+                    responseMimeType: "application/json",
+                    responseSchema: responseSchema
+                };
+            }
+
+            let attempt = 0;
+            const maxAttempts = 3;
+            let delay = 1000;
+
+            while (attempt < maxAttempts) {
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP status code ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!text) {
+                        throw new Error("Empty candidate response");
+                    }
+                    return text;
+                } catch (error) {
+                    attempt++;
+                    if (attempt >= maxAttempts) {
+                        throw error;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // Feature A: AI RPP/Modul Ajar Generator (Administrasi Tab)
+        async function generateAI_RPP() {
+            const kelas = document.getElementById('rpp-kelas').value;
+            const topik = document.getElementById('rpp-topik').value.trim();
+            const durasi = document.getElementById('rpp-durasi').value;
+            const outputBox = document.getElementById('rpp-output-box');
+
+            if (!topik) {
+                showToast('Mohon masukkan topik pembelajaran terlebih dahulu.', '⚠️');
+                return;
+            }
+
+            outputBox.innerText = `Menghubungi AI Gemini untuk membuat Modul Ajar RPP tentang "${topik}"...\nMohon tunggu sejenak.`;
+            showToast('Membuat draf Modul Ajar...', '✨');
+
+            const systemPrompt = "Anda adalah desainer kurikulum ahli untuk Sekolah Menengah Kejuruan (SMK) program keahlian Pengembangan Perangkat Lunak dan Gim (PPLG) di Indonesia berbasis Kurikulum Merdeka. Selalu gunakan Bahasa Indonesia yang formal dan profesional.";
+            const userQuery = `Buat draf RPP/Modul Ajar praktis dengan rincian berikut:
+            Tingkat: ${kelas}
+            Topik: ${topik}
+            Durasi: ${durasi}
+
+            Format Output Harus Terstruktur:
+            1. TUJUAN PEMBELAJARAN (Sesuai ATP/KKTP)
+            2. PERSIAPAN / ALAT DAN BAHAN (Lab Komputer, editor code, dll)
+            3. KEGIATAN INTI PEMBELAJARAN (Langkah praktikum terperinci)
+            4. ASESMEN & TUGAS MANDIRI SISWA (Soal latihan praktis)`;
+
+            try {
+                const rppResult = await callGeminiAPI(userQuery, systemPrompt);
+                outputBox.innerText = rppResult;
+                showToast('Modul RPP berhasil di-generate!', '✅');
+            } catch (err) {
+                console.error(err);
+                outputBox.innerText = `Error: Gagal memanggil AI. Silakan periksa koneksi internet atau sematkan API Key kustom di sidebar.\n\nSimulasi Draf RPP Alternatif:\n1. TUJUAN: Memahami dasar ${topik}.\n2. KEGIATAN: Siswa membuka Lab Komputer dan berlatih menulis sintaks ${topik} terpandu.\n3. ASESMEN: Membuat program sederhana berdasar ${topik}.`;
+                showToast('Gagal memproses RPP AI.', '❌');
+            }
+        }
+
+        // Feature B: AI Interactive Quiz Generator (Evaluasi Tab)
+        async function generateAI_Quiz() {
+            const topic = document.getElementById('quiz-topic-select').value;
+            const container = document.getElementById('quiz-container');
+            const footer = document.getElementById('quiz-footer');
+            const btn = document.getElementById('btn-gen-quiz');
+            const spinner = btn.querySelector('.spinner');
+
+            container.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12">
+                    <span class="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-3"></span>
+                    <p class="text-xs text-slate-500 font-semibold animate-pulse">Merumuskan 3 pertanyaan ujian untuk "${topic}" menggunakan AI...</p>
+                </div>
+            `;
+            footer.classList.add('hidden');
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+
+            const systemPrompt = "Anda adalah pembuat soal kuis pemrograman kejuruan PPLG. Hasilkan kuis format pilihan ganda dalam bentuk JSON array terstruktur.";
+            
+            const schema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        question: { "type": "STRING" },
+                        options: {
+                            "type": "ARRAY",
+                            "items": { "type": "STRING" }
+                        },
+                        answerIndex: { "type": "INTEGER" },
+                        explanation: { "type": "STRING" }
+                    },
+                    "required": ["question", "options", "answerIndex", "explanation"]
+                }
+            };
+
+            const userQuery = `Buat 3 pertanyaan ujian pilihan ganda berkualitas tinggi tentang topik: "${topic}". Pertanyaan harus ramah untuk siswa SMK PPLG, berikan 4 pilihan jawaban, indeks jawaban benar dari 0 sampai 3, serta alasan penjelasannya.`;
+
+            try {
+                const responseText = await callGeminiAPI(userQuery, systemPrompt, schema);
+                aiQuizData = JSON.parse(responseText);
+                currentQuizIndex = 0;
+                quizAnswersGiven = [];
+                renderQuizQuestion();
+                footer.classList.remove('hidden');
+                showToast('Kuis AI Berhasil Digenerate!', '🎯');
+            } catch (err) {
+                console.error(err);
+                // Mock Quiz fallback if API connection issue
+                aiQuizData = [
+                    {
+                        question: "Apakah fungsi dari Class dalam paradigma Object-Oriented Programming (OOP)?",
+                        options: ["Menyimpan data baris tabel database", "Sebagai cetak biru atau template untuk pembuatan Object", "Menghubungkan kabel Local Area Network", "Mengompilasi script HTML"],
+                        answerIndex: 1,
+                        explanation: "Class bertindak sebagai rancangan/blueprint, sedangkan Object adalah wujud nyata instansiasi dari Class."
+                    },
+                    {
+                        question: "Manakah sintaks SQL yang tepat untuk mengambil semua data dari tabel siswa?",
+                        options: ["GET ALL FROM tb_siswa", "SELECT * FROM tb_siswa", "SHOW tb_siswa", "QUERY ALL tb_siswa"],
+                        answerIndex: 1,
+                        explanation: "Sintaks SELECT * digunakan untuk mengambil seluruh kolom pada tabel MySQL."
+                    },
+                    {
+                        question: "Di bawah ini, pilar manakah yang bukan merupakan bagian dari Berpikir Komputasional (Computational Thinking)?",
+                        options: ["Dekomposisi", "Abstraksi", "Asimilasi", "Pengenalan Pola"],
+                        answerIndex: 2,
+                        explanation: "4 Pilar Berpikir Komputasional adalah Dekomposisi, Pengenalan Pola, Abstraksi, dan Algoritma."
+                    }
+                ];
+                currentQuizIndex = 0;
+                quizAnswersGiven = [];
+                renderQuizQuestion();
+                footer.classList.remove('hidden');
+                showToast('Menggunakan kuis simulasi bawaan offline.', 'ℹ️');
+            } finally {
+                btn.disabled = false;
+                spinner.classList.add('hidden');
+            }
+        }
+
+        function renderQuizQuestion() {
+            const container = document.getElementById('quiz-container');
+            const q = aiQuizData[currentQuizIndex];
+            
+            let optionsHTML = '';
+            q.options.forEach((opt, idx) => {
+                optionsHTML += `
+                    <button onclick="selectQuizAnswer(${idx})" id="opt-${idx}" class="quiz-option w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition text-xs font-medium text-slate-700">
+                        ${String.fromCharCode(65 + idx)}. ${escapeHTML(opt)}
+                    </button>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] font-extrabold bg-blue-100 text-blue-700 px-2 py-0.5 rounded tracking-wide uppercase">Soal Ke ${currentQuizIndex + 1}</span>
+                    </div>
+                    <h3 class="font-bold text-slate-800 text-sm leading-relaxed">${escapeHTML(q.question)}</h3>
+                    <div class="space-y-2.5 pt-2">
+                        ${optionsHTML}
+                    </div>
+                    <div id="explanation-box" class="hidden p-4 rounded-xl text-[11px] leading-relaxed"></div>
+                </div>
+            `;
+
+            document.getElementById('quiz-progress-text').innerText = `Pertanyaan ${currentQuizIndex + 1} dari ${aiQuizData.length}`;
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.innerText = currentQuizIndex === aiQuizData.length - 1 ? 'Selesaikan Kuis 🏁' : 'Pertanyaan Berikutnya →';
+            nextBtn.classList.add('opacity-50', 'pointer-events-none');
+        }
+
+        function selectQuizAnswer(index) {
+            const q = aiQuizData[currentQuizIndex];
+            const explanationBox = document.getElementById('explanation-box');
+            
+            // Lock other options
+            document.querySelectorAll('.quiz-option').forEach((btn, idx) => {
+                btn.onclick = null; // Disable clicking
+                if (idx === q.answerIndex) {
+                    btn.classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                } else if (idx === index) {
+                    btn.classList.add('bg-red-50', 'border-red-500', 'text-red-800');
+                }
+            });
+
+            // Populate and show explanation
+            if (index === q.answerIndex) {
+                explanationBox.innerHTML = `<strong>🟢 Benar!</strong> ${escapeHTML(q.explanation)}`;
+                explanationBox.className = "p-4 rounded-xl text-[11px] leading-relaxed bg-green-50 text-green-700 border border-green-200";
+                quizAnswersGiven.push(true);
+            } else {
+                explanationBox.innerHTML = `<strong>🔴 Kurang Tepat!</strong> Jawaban yang benar adalah pilihan ${String.fromCharCode(65 + q.answerIndex)}. <br/>${escapeHTML(q.explanation)}`;
+                explanationBox.className = "p-4 rounded-xl text-[11px] leading-relaxed bg-red-50 text-red-700 border border-red-200";
+                quizAnswersGiven.push(false);
+            }
+            explanationBox.classList.remove('hidden');
+
+            // Enable next button
+            const nextBtn = document.getElementById('quiz-next-btn');
+            nextBtn.classList.remove('opacity-50', 'pointer-events-none');
+        }
+
+        function nextQuizQuestion() {
+            if (currentQuizIndex < aiQuizData.length - 1) {
+                currentQuizIndex++;
+                renderQuizQuestion();
+            } else {
+                // Show Quiz Summary
+                const correctCount = quizAnswersGiven.filter(v => v).length;
+                const container = document.getElementById('quiz-container');
+                const footer = document.getElementById('quiz-footer');
+                footer.classList.add('hidden');
+
+                container.innerHTML = `
+                    <div class="text-center py-8 space-y-4">
+                        <span class="text-5xl block">🏆</span>
+                        <h3 class="font-extrabold text-lg text-slate-800">Evaluasi Selesai!</h3>
+                        <p class="text-xs text-slate-500">Berikut adalah skor perolehan Anda berdasarkan penilaian kuis cerdas AI.</p>
+                        
+                        <div class="inline-flex items-center justify-center p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                            <div class="text-center">
+                                <span class="text-3xl font-extrabold text-blue-600">${correctCount} / ${aiQuizData.length}</span>
+                                <span class="block text-[10px] text-slate-400 font-bold uppercase mt-1">Jawaban Benar</span>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="switchSection('evaluasi')" class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold py-2 px-6 rounded-xl transition">
+                                Coba Topik Lain
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Feature C: Code Explainer & Boilerplate Generator (Sumber Belajar Tab)
+        async function sandboxAI_Explain() {
+            const lang = document.getElementById('sandbox-lang').value;
+            const code = document.getElementById('sandbox-code-input').value.trim();
+            const consoleBox = document.getElementById('sandbox-output-block');
+
+            if (!code) {
+                showToast('Mohon masukkan kode pemrograman di area input!', '⚠️');
+                return;
+            }
+
+            consoleBox.innerText = `// AI Gemini sedang meninjau dan menganalisis kode Anda...\n// Menghubungi server...`;
+            showToast('Menganalisis Kode...', '🔍');
+
+            const query = `Bahasa Pemrograman: ${lang}\n\nLakukan analisis dari baris kode berikut:\n\`\`\`\n${code}\n\`\`\`\n\nJelaskan:\n1. Kegunaan kode ini secara fungsional.\n2. Cara kerjanya secara alur baris demi baris.\n3. Berikan saran jika ada potensi bug atau perbaikan penulisan.`;
+
+            try {
+                const expl = await callGeminiAPI(query, "Anda adalah asisten tutor pemrograman terpercaya yang menjelaskan konsep coding secara ramah, ringkas, dan mudah dimengerti siswa kejuruan.");
+                consoleBox.innerText = expl;
+                showToast('Analisis selesai!', '✅');
+            } catch (err) {
+                console.error(err);
+                consoleBox.innerText = `// Error: Gagal memproses data penjelasan dari asisten AI.\n// Silakan periksa koneksi internet Anda.`;
+            }
+        }
+
+        async function sandboxAI_Boilerplate() {
+            const lang = document.getElementById('sandbox-lang').value;
+            const consoleBox = document.getElementById('sandbox-output-block');
+
+            consoleBox.innerText = `// AI Gemini sedang merancang kode boilerplate/starter template untuk ${lang}...\n// Menghubungi server...`;
+            showToast('Membuat Boilerplate...', '⚙️');
+
+            const query = `Tuliskan template dasar (boilerplate) code clean dan aman menggunakan bahasa/framework: ${lang}. 
+            Sertakan komentar baris demi baris untuk mengajari siswa SMK bagaimana tiap baris tersebut bekerja. Berikan penulisan standar industri.`;
+
+            try {
+                const codeGenerated = await callGeminiAPI(query, "Anda adalah software engineer senior yang menyajikan code boilerplate siap pakai berstandar tinggi lengkap dengan komentar instruksi belajar.");
+                consoleBox.innerText = codeGenerated;
+                showToast('Boilerplate berhasil dibuat!', '✅');
+            } catch (err) {
+                console.error(err);
+                consoleBox.innerText = `// Error: Gagal menghasilkan boilerplate.\n// Silakan periksa kunci API Anda di sidebar.`;
+            }
+        }
+
+        // Feature D: Q&A Forum Smart Bot (Forum Tab)
+        let forumHistory = [];
+
+        function handleForumKeyPress(e) {
+            if (e.key === 'Enter') {
+                sendForumChatMessage();
+            }
+        }
+
+        async function sendForumChatMessage() {
+            const input = document.getElementById('forum-user-input');
+            const message = input.value.trim();
+            const chatBox = document.getElementById('forum-chat-box');
+
+            if (!message) return;
+
+            // Append user message
+            chatBox.innerHTML += `
+                <div class="flex items-start gap-2.5 justify-end">
+                    <div class="bg-blue-600 p-3 rounded-2xl text-white max-w-[80%]">
+                        ${escapeHTML(message)}
+                    </div>
+                    <span class="text-lg">👤</span>
+                </div>
+            `;
+            
+            input.value = '';
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // Loading AI Response indicator
+            const aiId = "ai-msg-" + Date.now();
+            chatBox.innerHTML += `
+                <div id="${aiId}" class="flex items-start gap-2.5">
+                    <span class="text-lg">🤖</span>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm max-w-[80%] text-slate-600 animate-pulse">
+                        Menulis jawaban...
+                    </div>
+                </div>
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            const systemPrompt = "Anda adalah asisten cerdas Forum Tanya Jawab portal sekolah kejuruan (Informatika & PPLG). Jawab pertanyaan siswa seputar software engineering, error coding, basis data, atau jaringan dengan ramah, informatif, sertakan contoh syntax praktis yang ringkas jika dibutuhkan.";
+
+            try {
+                const aiResult = await callGeminiAPI(message, systemPrompt);
+                const aiElement = document.getElementById(aiId);
+                if (aiElement) {
+                    aiElement.innerHTML = `
+                        <span class="text-lg">🤖</span>
+                        <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm max-w-[80%] text-slate-700 whitespace-pre-wrap leading-relaxed">
+                            ${escapeHTML(aiResult)}
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                console.error(err);
+                const aiElement = document.getElementById(aiId);
+                if (aiElement) {
+                    aiElement.innerHTML = `
+                        <span class="text-lg">🤖</span>
+                        <div class="bg-white p-3 rounded-2xl border border-red-100 shadow-sm max-w-[80%] text-red-500 font-medium">
+                            Gagal mendapatkan jawaban dari Asisten AI. Hubungkan koneksi atau gunakan API Key kustom Anda sendiri di widget menu kiri.
+                        </div>
+                    `;
+                }
+            }
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function clearChatForum() {
+            const chatBox = document.getElementById('forum-chat-box');
+            chatBox.innerHTML = `
+                <div class="flex items-start gap-2.5">
+                    <span class="text-lg">🤖</span>
+                    <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm max-w-[80%] text-slate-600">
+                        Chat dibersihkan. Silakan tanyakan hal-hal baru seputar pemrograman kejuruan!
+                    </div>
+                </div>
+            `;
+            showToast('Obrolan dibersihkan.', '🧹');
+        }
+
+        // Standard helpers
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
+        function showToast(message, icon = 'ℹ️') {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-icon').innerText = icon;
+            document.getElementById('toast-message').innerText = message;
+            
+            toast.className = "fixed top-5 right-5 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center p-4 space-x-3 max-w-sm bg-white rounded-xl shadow-lg border border-slate-100";
+            
+            setTimeout(() => {
+                toast.className = "fixed top-5 right-5 z-50 transform translate-y-[-100px] opacity-0 transition-all duration-300 flex items-center p-4 space-x-3 max-w-sm bg-white rounded-xl shadow-lg border border-slate-100";
+            }, 3000);
+        }
+
+        function copyToClipboard(elementId) {
+            const el = document.getElementById(elementId);
+            const textToCopy = el.innerText || el.textContent;
+            
+            const textarea = document.createElement('textarea');
+            textarea.value = textToCopy;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast('Berhasil disalin ke clipboard!', '📋');
+        }
+
+        function submitTugasSim(e) {
+            e.preventDefault();
+            showToast('Pengumpulan Tugas Berhasil Terkirim!', '✅');
+            e.target.reset();
+        }
+
+        // Navigation control
+        function switchSection(sectionId) {
+            // Hide all
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('sidebar-active'));
+
+            // Show Specific
+            const activeSection = document.getElementById(sectionId);
+            if (activeSection) {
+                activeSection.classList.add('active');
+            }
+
+            // Update Nav UI
+            const activeNav = document.querySelector(`[data-section="${sectionId}"]`);
+            if (activeNav) {
+                activeNav.classList.add('sidebar-active');
+            }
+            
+            // Re-render components if needed
+            if(sectionId === 'materi') {
+                renderMaterials();
+                initMaterialChart();
+            }
+            if(sectionId === 'evaluasi') {
+                initScoreChart();
+            }
+
+            // Close mobile menu
+            const sidebar = document.querySelector('nav');
+            if (sidebar.classList.contains('fixed')) {
+                toggleMobileMenu();
+            }
+        }
+
+        function toggleMobileMenu() {
+            const sidebar = document.querySelector('nav');
+            sidebar.classList.toggle('hidden');
+            sidebar.classList.toggle('fixed');
+            sidebar.classList.toggle('inset-0');
+            sidebar.classList.toggle('z-50');
+            sidebar.classList.toggle('w-full');
+        }
+
+        // Material cards drawing
+        function renderMaterials() {
+            const filter = document.getElementById('class-filter').value;
+            const grid = document.getElementById('material-grid');
+            grid.innerHTML = '';
+
+            const filtered = filter === 'all' ? materialData : materialData.filter(m => m.class === filter);
+
+            filtered.forEach(m => {
+                grid.innerHTML += `
+                    <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition cursor-pointer flex flex-col justify-between">
+                        <div>
+                            <div class="text-3xl mb-3">${m.icon}</div>
+                            <span class="text-[9px] font-extrabold text-blue-600 uppercase tracking-widest block mb-1">Kelas ${m.class}</span>
+                            <h4 class="font-bold text-slate-800 text-sm mb-2 leading-tight">${escapeHTML(m.title)}</h4>
+                            <p class="text-xs text-slate-500 leading-relaxed">${escapeHTML(m.desc)}</p>
+                        </div>
+                        <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
+                            <button onclick="showToast('Membuka materi ${m.title}', '📖')" class="text-xs font-semibold text-blue-600 flex items-center hover:underline">
+                                Buka Materi →
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Charts rendering (Cakupan kurikulum & Nilai)
+        function initMaterialChart() {
+            const ctx = document.getElementById('materialChart').getContext('2d');
+            if(materialChart) materialChart.destroy();
+            materialChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Algoritma (X)', 'Java OOP (XI)', 'Subnetting (XI)', 'Web Dev (XII)', 'MySQL SQL (XII)'],
+                    datasets: [{
+                        label: 'Progres Capaian (%)',
+                        data: [90, 65, 80, 45, 50],
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        function initScoreChart() {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            if(scoreChart) scoreChart.destroy();
+            scoreChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Rata-rata Kelas X', 'Rata-rata Kelas XI', 'Rata-rata Kelas XII'],
+                    datasets: [{
+                        label: 'Nilai Ujian',
+                        data: [82, 79, 85],
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, max: 100 } }
+                }
+            });
+        }
+
+        // Initialize default state
+        window.onload = () => {
+            loadApiKey();
+            switchSection('beranda');
+        };
+    </script>
+</body>
+</html>
